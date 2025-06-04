@@ -1,107 +1,167 @@
-# Proyecto IoT - Monitoreo con MQTT y Serial
+# Proyecto IoT con MQTT y MTU
 
-Este repositorio contiene un sistema de monitoreo basado en sensores conectados vía Arduino (o simulador), usando MQTT como medio de transporte de datos y un MTU en Node.js para gestionar la publicación. Un subscriber en Python permite monitorear en tiempo real por sedes, pisos y sensores.
-
----
-
-## 1. Introducción General
-
-- **Objetivo**: Transmitir datos desde sensores (reales o simulados) a través de un servidor MQTT, con fallback local ante desconexiones.
-- **Componentes**:
-  - Arduino o simulador (SimulIDE o Python)
-  - MTU (Node.js) con conexión serial y publicación MQTT
-  - Broker Mosquitto con autenticación
-  - Subscriber (Python) para monitoreo interactivo
+Este proyecto simula un entorno IoT que conecta sensores físicos o simulados (Arduino o GUI en Python) con un servidor MQTT Mosquitto, mediante un módulo MTU escrito en Node.js. Incluye un sistema de respaldo en caso de desconexión y un subscriber en Python que permite seleccionar topics específicos por sede y piso.
 
 ---
 
-## 2. Instalación y Configuración Inicial
+## Estructura del Proyecto
 
-### 2.1 Requisitos
+```plaintext
+PROYECTODEMODAY/
+├── arduinoSens/
+│   └── sensores_MTU.ino                 # Código Arduino (físico)
+├── nodeMQTT/
+│   ├── index.js                         # Código principal del MTU en Node.js
+│   ├── .env                             # Configuración del entorno (SEDE, PISO, SERIAL_PORT)
+│   ├── logs/                            # Carpeta donde se almacenan logs offline
+│   ├── package.json                     # Dependencias y metadata
+│   └── package-lock.json
+├── pythonMTU/
+│   ├── subscriber.py                    # Subscriber con selección de topic
+│   ├── subscriberGrl.py                # Subscriber general (todos los topics)
+│   ├── publisherPruebas.py              # Publisher de prueba (modo local/simulador)
+│   └── logs/                            # Logs para respaldo del simulador
+├── simuladorArduino/
+│   └── simuladorGUI.py                  # Simulador gráfico en Tkinter (envía datos por serial)
+├── procedimiento.txt                    # Guía paso a paso (formato de texto plano)
+└── README.md                            # Actual archivo
+```
 
-- Node.js y npm
-- Python 3.x (`paho-mqtt`)
-- Mosquitto MQTT
-- `socat` (para puertos virtuales)
+---
+
+## Requisitos
+
+- Node.js y `npm`
+- Python 3.10+
+- `mosquitto` (servidor MQTT)
 - Dependencias:
-  ```bash
-  npm install serialport mqtt dotenv
-  pip install paho-mqtt
-  ```
+  - Node.js: `npm install mqtt serialport dotenv`
+  - Python: `pip install paho-mqtt pyserial`
 
-### 2.2 Creación de Puertos Virtuales
+---
 
-```bash
-socat -d -d PTY,link=/dev/ttyVirtual1,raw,echo=0 PTY,link=/dev/ttyVirtual2,raw,echo=0
-```
+## Configuración de `.env`
 
-Verifica las rutas con:
-```bash
-ls -l /dev/ttyVirtual*
-```
+Ubicado en `nodeMQTT/.env`:
 
-### 2.3 Configuración del archivo `.env`
-
-```dotenv
+```env
 SEDE=amerikeCDMX
 PISO=P1
-SERIAL_PORT=/dev/ttyVirtual2
-MQTT_HOST=192.168.X.X
-MQTT_PORT=1883
-MQTT_USER=mtuuser
-MQTT_PASS=amerike
+SERIAL_PORT=/dev/pts/3
+```
+
+- **SEDE**: amerikeCDMX o amerikeGDJ
+- **PISO**: PB, P1 o P2
+- **SERIAL_PORT**: ruta del puerto virtual creado por `socat`
+
+---
+
+## Ejecución Paso a Paso
+
+### 1. Crear puertos virtuales con `socat`
+
+```bash
+sudo socat -d -d pty,raw,echo=0 pty,raw,echo=0
+# Anota los /dev/pts/X y /dev/pts/Y que se muestran
+```
+
+### 2. Modificar `.env` con la ruta del puerto
+
+```env
+SERIAL_PORT=/dev/pts/X  # Cambia X por el valor mostrado por socat
+```
+
+### 3. Verificar IP del servidor (en cada archivo):
+
+- `nodeMQTT/index.js`
+- `pythonMTU/subscriber.py`
+- `pythonMTU/publisherPruebas.py` (si lo usas)
+
+Busca líneas como:
+
+```js
+host: '192.168.3.52'  // Cambia por la IP de tu servidor MQTT
+```
+
+### 4. Ejecutar servidor Mosquitto
+
+En la máquina servidor:
+
+```bash
+mosquitto -c /etc/mosquitto/mosquitto.conf
+```
+
+Asegúrate de que tenga autenticación habilitada.
+
+---
+
+## Ejecución por módulo
+
+### Opción A: Simulación con GUI (sin Arduino físico)
+
+1. Ejecuta el simulador:
+
+```bash
+python3 simuladorArduino/simuladorGUI.py
+```
+
+2. Ejecuta el MTU (lector del puerto serial):
+
+```bash
+cd nodeMQTT
+node index.js
+```
+
+3. Ejecuta el subscriber (selección por topic):
+
+```bash
+cd pythonMTU
+python3 subscriber.py
 ```
 
 ---
 
-## 3. MTU - index.js
+## Lista de Topics por Sede y Piso
 
-- Lee datos del puerto serial
-- Extrae tipo de sensor
-- Construye topic dinámicamente: `SEDE/PISO/sensor`
-- Publica a MQTT
-- Si se pierde conexión, guarda localmente en `logs/`
-
----
-
-## 4. Broker Mosquitto
-
-- Asegura configuración con autenticación:
-  - `mosquitto_passwd -c /etc/mosquitto/passwd mtuuser`
-  - Modifica `/etc/mosquitto/mosquitto.conf`:
-    ```
-    allow_anonymous false
-    password_file /etc/mosquitto/passwd
-    listener 1883
-    ```
+| Topic MQTT                         | Descripción                             |
+|-----------------------------------|-----------------------------------------|
+| amerikeCDMX/PB/temp               | Temperatura sede CDMX PB                |
+| amerikeCDMX/PB/hum                | Humedad sede CDMX PB                    |
+| amerikeCDMX/PB/rfid               | RFID autorizado CDMX PB                 |
+| amerikeCDMX/PB/rfid/denegado     | RFID denegado CDMX PB                   |
+| amerikeCDMX/PB/otros             | Otros sensores sede CDMX PB             |
+| ...                               | (Misma estructura para P1, P2, GDJ...)  |
 
 ---
 
-## 5. Subscriber (Python)
+## Checklist Validable por Componente
 
-- Ejecuta con:
-  ```bash
-  python3 subscriber.py
-  ```
-- Menú para seleccionar sede, piso y sensor
-- Se conecta al topic correspondiente y muestra los mensajes
+| Categoría               | Verificación                                               | Observaciones Docentes                    |
+|------------------------|------------------------------------------------------------|--------------------------------------------|
+| MQTT Server            | Mosquitto activo, con auth y accesible desde red           |                                            |
+| MTU (Node.js)          | Lee datos del serial, publica en topic correcto            |                                            |
+| .env                   | SEDE, PISO y SERIAL_PORT definidos correctamente            |                                            |
+| Publisher (Python)     | Publica datos simulados si se ejecuta directamente          |                                            |
+| Subscriber (Python)    | Se suscribe a topic correcto según menú                     |                                            |
+| Offline logs           | Se genera archivo si MTU pierde conexión                    |                                            |
+| Datos enviados         | Formato válido `TEMP:`, `HUM:`, `RFID:` o `otros`          |                                            |
+| Simulador GUI          | Envia datos correctos por serial al MTU                     |                                            |
+| `socat`                | Virtualiza puertos serial correctamente                     |                                            |
+| Prueba de recuperación | Al reconectar MQTT, se reenvían nuevos datos sin error      |                                            |
 
----
-
-## 6. Checklist de Validación Técnica
-
-| Ítem | Cumple | Observaciones |
-|------|--------|----------------|
-| `.env` configurado correctamente | ✅ / ❌ | ... |
-| Mosquitto funcionando con autenticación | ✅ / ❌ | ... |
-| Comunicación Serial en MTU activa | ✅ / ❌ | ... |
-| Publicación correcta de topics MQTT | ✅ / ❌ | ... |
-| Guardado en archivo cuando no hay red | ✅ / ❌ | ... |
-| Subscriber recibe datos al seleccionar topic correcto | ✅ / ❌ | ... |
-| Diferenciación de sede y piso funciona | ✅ / ❌ | ... |
 
 ---
 
-## 7. Conclusiones
+## Recomendaciones Finales
 
-Este sistema demuestra cómo se puede integrar hardware y software con protocolos de comunicación modernos para crear una arquitectura IoT robusta. Su diseño permite extenderlo fácilmente hacia bases de datos, dashboards o alertas.
+- Ejecuta siempre primero `socat` y el simulador GUI si no usas Arduino.
+- No cierres la terminal de `socat`, déjala corriendo en segundo plano.
+- Usa `subscriberGrl.py` si deseas visualizar todos los topics sin filtro.
+- Asegúrate de que Mosquitto permita conexiones remotas si trabajas en red.
+
+---
+
+## Autor
+
+Ciberseguridad 6o Semestre, Uiversidad Amerike  
+Proyecto para entorno de ciberseguridad e IoT académico – 2025
