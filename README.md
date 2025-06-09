@@ -80,7 +80,7 @@ SERIAL_PORT=/dev/pts/X  # Cambia X por el valor mostrado por socat
 Busca líneas como:
 
 ```js
-host: '192.168.3.52'  // Cambia por la IP de tu servidor MQTT
+host: '192.168.3.52'  
 ```
 
 ### 4. Ejecutar servidor Mosquitto
