@@ -136,18 +136,20 @@ python3 subscriber.py
 
 ## Checklist Validable por Componente
 
-| Categoría               | Verificación                                               | Observaciones Docentes                    |
-|------------------------|------------------------------------------------------------|--------------------------------------------|
-| MQTT Server            | Mosquitto activo, con auth y accesible desde red           |        ☑                                     |
-| MTU (Node.js)          | Lee datos del serial, publica en topic correcto            |    ☑                                         |
-| .env                   | SEDE, PISO y SERIAL_PORT definidos correctamente            |    ☑                                         |
-| Publisher (Python)     | Publica datos simulados si se ejecuta directamente          |      ☑                                       |
-| Subscriber (Python)    | Se suscribe a topic correcto según menú                     |    ☑                                         |
-| Offline logs           | Se genera archivo si MTU pierde conexión                    |     ☑                                        |
-| Datos enviados         | Formato válido `TEMP:`, `HUM:`, `RFID:` o `otros`          |               ☑                              |
-| Simulador GUI          | Envia datos correctos por serial al MTU                     |         ☑                                    |
-| `socat`                | Virtualiza puertos serial correctamente                     |     ☑                                        |
-| Prueba de recuperación | Al reconectar MQTT, se reenvían nuevos datos sin error      |                       ☑                      |
+| Categoría                   | Verificación                                                                                       | Observación Docente                                                                 |
+|----------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| MQTT Server                | Servidor MQTT - Mosquitto activo; con auth básico y accesible desde red. Firewall con puertos abiertos. | Se hizo el análisis de la comunicación no encriptada, con certificado.              |
+| ARDUINO con lectura/escritura de sensores y actuadores | Automatización de actuadores, lectura de sensores y envío de información de acuerdo al protocolo propio. | Se analizó el protocolo implementado buscando vulnerabilidades.                     |
+| MTU (Node.js)              | Lee datos desde el puerto serial con protocolo propio, publica en el topic correcto del servidor MQTT, filtrando la información recibida del arduino. | Se analizó el protocolo implementado, junto con la comunicación no encriptada.      |
+| Publisher (Python)         | Publica datos simulados para probar el protocolo MQTT.                                              | Se puede usar el servidor MQTT de pruebas.                                          |
+| Subscriber (Python)        | Se suscribe a topic correcto según menú, para realizar pruebas con el protocolo MQTT.              | Se puede usar el servidor MQTT de pruebas.                                          |
+| Offline logs               | Se genera archivo si MTU pierde conexión para su agregación posterior a la base de datos.          | Revisión del archivo creado en el formato correcto.                                 |
+| Protocolo de comunicación MQTT | El formato debe ser válido de acuerdo al protocolo: `TEMP:`, `HUM:`, `RFID:` o `otros`.               | Correcto.                                                                           |
+| Simulador ARDUINO          | Envía datos vía serial al MTU utilizando el protocolo creado, verificando la seguridad. Debe contener interfaz gráfica para su uso. | Se verificó desconectando el arduino y conectando el programa.                      |
+| `socat`                    | Necesario para el uso del simulador GUI.                                                           | Correcto.                                                                           |
+| Prueba de recuperación     | Al reconectar MQTT, se reenvían nuevos datos sin error, dejando de capturar en archivo de “Offline logs”. Se deben agrupar en archivos por sesión. | Funciona al desconectar la computadora de la red.                                   |
+| Base de datos              | Diseño e implementación de una base de datos para guardar toda la información generada en el sistema, junto con el sistema de control de acceso. | Correcto.                                                                           |
+| Servidor web               | Interfaz para la consulta de datos capturados a través del sistema. Debe implementar el sistema de control de acceso diseñado en la base de datos. Así como una visualización gráfica de los datos. | Correcto.                                                                           |
 
 
 ---
