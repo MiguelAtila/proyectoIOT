@@ -10,6 +10,8 @@ Este proyecto simula un entorno IoT que conecta sensores físicos o simulados (A
 PROYECTODEMODAY/
 ├── arduinoSens/
 │   └── sensores_MTU.ino                 # Código Arduino (físico)
+├── assets/
+│   ├── imagenes                         # Referencias visuales
 ├── nodeMQTT/
 │   ├── index.js                         # Código principal del MTU en Node.js
 │   ├── .env                             # Configuración del entorno (SEDE, PISO, SERIAL_PORT)
@@ -95,7 +97,7 @@ Asegúrate de que tenga autenticación habilitada.
 
 ---
 
-## Ejecución por módulo
+## 5. Ejecución por módulo
 
 ### Opción A: Simulación con GUI (sin Arduino físico)
 
@@ -134,6 +136,99 @@ python3 subscriber.py
 
 ---
 
+## Descripción de la Base de Datos
+
+El sistema contempla una base de datos que almacena toda la información generada por los sensores IoT, ya sea desde el MTU conectado directamente o tras una recuperación por caída de red. La base se compone de las siguientes tablas principales:
+
+### Principales Entidades y Relaciones
+
+- **`sensor`** y **`actuador`**: Representan los dispositivos físicos. Están vinculados a una habitación (`habitacion`) y asociados a un modelo (`modelosensor` o `modeloactuador`).
+
+- **`modelosensor` / `modeloactuador`**: Contienen información sobre el modelo del dispositivo, incluyendo unidad de medida (`unit`) y tipo de dato (`customdatatype`).
+
+- **`registrosen`**: Almacena los datos históricos capturados por sensores, incluyendo fecha, hora y valor del dato.
+
+- **`registroact`**: Guarda los registros de control o instrucciones enviadas a los actuadores (valor, fecha, hora, instrucción).
+
+- **`habitacion`**: Cada habitación está asociada a un `piso`, y cada `piso` pertenece a un `edificio`.
+
+- **`user`**: Contiene la información de usuarios del sistema, los cuales pueden autenticarse y acceder a la interfaz web. Están vinculados a un `rol` y un `estado`.
+
+- **`rol`** y **`estado`**: Determinan el perfil de acceso (alumno, coordinador, director, etc.) y el estado de actividad del usuario (activo/inactivo).
+
+- **`unit`** y **`customdatatype`**: Definen la unidad física (ej. °C, %, booleano) y el tipo lógico de dato (ej. temperatura, humedad, RFID).
+
+---
+
+### Beneficios del Modelo
+
+-  **Trazabilidad completa**: Cada lectura está asociada a sensor, ubicación, fecha y hora.
+-  **Jerarquía espacial clara**: Edificio → Piso → Habitación.
+-  **Control de acceso**: Roles diferenciados y estados de usuario.
+-  **Integración web**: Fácil conexión con la interfaz para visualización y administración.
+-  **Escalabilidad**: Permite incorporar nuevos sensores, pisos o edificios sin modificar la estructura.
+
+---
+
+> ![Modelo Base de Datos](./assets/imagenes/modeloBDatos.jpeg)
+
+---
+
+## Descripción del Servidor Web
+
+```plaintext
+PAGINA_IOT/
+├── css/
+│   ├── registro.css
+│   ├── styles.css
+│   ├── styles1.css
+│   ├── styles2.css
+│   └── styles3.css
+├── img/                                 # Carpeta para imágenes usadas en la web
+├── js/
+│   └── graficas.js                      # Generación de gráficas dinámicas
+├── alumno.php                           # Vista del alumno
+├── coordinacion.php                     # Vista del área de coordinación
+├── datos_select.php                     # Endpoint para selects dinámicos
+├── datos_sensores.php                   # Consulta de datos desde la base
+├── db.php                               # Conexión a base de datos
+├── director.php                         # Vista para el director general
+├── index.php                            # Página de inicio
+├── jefe_edificio.php                    # Vista para jefes de edificio
+├── jefe_piso.php                        # Vista para jefes de piso
+├── login.php                            # Login de usuarios
+├── logout.php                           # Cierre de sesión
+└── registro.php                         # Registro de nuevos usuarios
+```
+
+Se planea una interfaz web que permita:
+
+- Consultar los datos almacenados en la base de forma visual (gráficas).
+- Aplicar filtros por sede, piso y tipo de sensor.
+- Mostrar en tiempo real la última lectura si el servidor MQTT está activo.
+- Contar con un módulo de autenticación si se activa el control de acceso.
+
+> ![Index](./assets/imagenes/index.jpeg)
+> ![Login](./assets/imagenes/login.jpeg)
+> ![Registro](./assets/imagenes/registro.jpeg)
+> ![Selección](./assets/imagenes/seleccion.jpeg)
+
+---
+
+## Maqueta Física (1:20)
+
+Como parte del despliegue físico del sistema, se ha implementado una maqueta en escala 1:20 del **laboratorio de ciberseguridad de Universidad Amerike**. Esta representa:
+
+- La sucursal: **amerikeCDMX** 
+- Con el piso: **PB**
+- Sensores físicos o simulados colocados en el piso
+
+Esta maqueta se usa como referencia visual para ubicar la distribución lógica del sistema IoT y los topics MQTT.
+
+> ![Maqueta](./assets/imagenes/maqueta.jpeg)
+
+---
+
 ## Checklist Validable por Componente
 
 | Categoría                   | Verificación                                                                                       | Observación Docente                                                                 |
@@ -153,6 +248,12 @@ python3 subscriber.py
 
 
 ---
+
+## Videos Explicativos DemoDay Amerike 2025
+
+[Ver (videoDemoDay1.mp4)](./assets/videos/videoDemoDay1.mp4)
+
+[Ver (videoDemoDay2.mp4)](./assets/videos/videoDemoDay2.mp4)
 
 ## Recomendaciones Finales
 
