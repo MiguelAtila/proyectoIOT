@@ -138,16 +138,16 @@ python3 subscriber.py
 
 | Categoría               | Verificación                                               | Observaciones Docentes                    |
 |------------------------|------------------------------------------------------------|--------------------------------------------|
-| MQTT Server            | Mosquitto activo, con auth y accesible desde red           |                                            |
-| MTU (Node.js)          | Lee datos del serial, publica en topic correcto            |                                            |
-| .env                   | SEDE, PISO y SERIAL_PORT definidos correctamente            |                                            |
-| Publisher (Python)     | Publica datos simulados si se ejecuta directamente          |                                            |
-| Subscriber (Python)    | Se suscribe a topic correcto según menú                     |                                            |
-| Offline logs           | Se genera archivo si MTU pierde conexión                    |                                            |
-| Datos enviados         | Formato válido `TEMP:`, `HUM:`, `RFID:` o `otros`          |                                            |
-| Simulador GUI          | Envia datos correctos por serial al MTU                     |                                            |
-| `socat`                | Virtualiza puertos serial correctamente                     |                                            |
-| Prueba de recuperación | Al reconectar MQTT, se reenvían nuevos datos sin error      |                                            |
+| MQTT Server            | Mosquitto activo, con auth y accesible desde red           |        ☑                                     |
+| MTU (Node.js)          | Lee datos del serial, publica en topic correcto            |    ☑                                         |
+| .env                   | SEDE, PISO y SERIAL_PORT definidos correctamente            |    ☑                                         |
+| Publisher (Python)     | Publica datos simulados si se ejecuta directamente          |      ☑                                       |
+| Subscriber (Python)    | Se suscribe a topic correcto según menú                     |    ☑                                         |
+| Offline logs           | Se genera archivo si MTU pierde conexión                    |     ☑                                        |
+| Datos enviados         | Formato válido `TEMP:`, `HUM:`, `RFID:` o `otros`          |               ☑                              |
+| Simulador GUI          | Envia datos correctos por serial al MTU                     |         ☑                                    |
+| `socat`                | Virtualiza puertos serial correctamente                     |     ☑                                        |
+| Prueba de recuperación | Al reconectar MQTT, se reenvían nuevos datos sin error      |                       ☑                      |
 
 
 ---
