@@ -251,9 +251,10 @@ Esta maqueta se usa como referencia visual para ubicar la distribución lógica 
 
 ## Videos Explicativos DemoDay Amerike 2025
 
-[Ver (videoDemoDay1.mp4)](./assets/videos/videoDemoDay1.mp4)
+[![videoDemoDay1](https://img.youtube.com/vi/nk1UmFAka90/hqdefault.jpg)](https://youtu.be/nk1UmFAka90)
 
-[Ver (videoDemoDay2.mp4)](./assets/videos/videoDemoDay2.mp4)
+[![videoDemoDay2](https://img.youtube.com/vi/tR_iOfNEaTU/hqdefault.jpg)](https://youtu.be/tR_iOfNEaTU)
+
 
 ## Recomendaciones Finales
 
